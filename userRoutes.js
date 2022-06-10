@@ -54,6 +54,7 @@ router.post("/login", (req, res) => {
                 expiresIn: "10h",
               });
               // Saving the token to the database
+              delete foundUser.password;
               foundUser.token = token;
               // sending the user data to the client
               res.send(foundUser);
