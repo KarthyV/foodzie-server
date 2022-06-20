@@ -14,7 +14,12 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
   favorites: {
-    type: [{ recipeId: { type: String, unique: true }, recipeName: String }],
+    type: [
+      {
+        recipeId: { type: String, sparse: true },
+        recipeName: { type: String, sparse: true },
+      },
+    ],
   },
 });
 
