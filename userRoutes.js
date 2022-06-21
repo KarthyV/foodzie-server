@@ -24,7 +24,7 @@ router.post("/users", (req, res) => {
       user.token = token;
       // Saving it to the database
       user.save();
-      console.log(user);
+      // console.log(user);
       // Sending the user data back to the client
       res.send(user);
     });
@@ -87,14 +87,11 @@ router.post("/add-favorites", authUser, async (req, res) => {
   if (!user.favorites.length) user.favorites.push({ recipeId, recipeName });
 
   // If Favorites is not empty, adding favorites by checking if the recipe has already been added
-  for (i = 0; i < user.favorites.length; i++) {
-    if (user.favorites[i].recipeId === recipeId) {
-      // If recipe already exists, not adding it to favorites
-      break;
-    } else {
-      user.favorites.push({ recipeId, recipeName });
-      console.log(user.favorites);
-    }
+  const favCheck = user.favorites.some(
+    (recipe) => recipe.recipeId === recipeId
+  );
+  if (!favCheck) {
+    user.favorites.push({ recipeId, recipeName });
   }
   // Saving the user again to the database along with favorites
   await user.save();
@@ -106,7 +103,7 @@ router.post("/delete-favorites", authUser, async (req, res) => {
   // Getting the recipe ID for checking if it exists in favorites
   const { recipeId } = req.body;
   const user = req.user;
-  console.log(recipeId);
+  // console.log(recipeId);
   user.favorites = user.favorites.filter(
     (recipe) => recipe.recipeId !== recipeId
   );
