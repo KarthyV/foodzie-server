@@ -8,7 +8,6 @@ const authUser = async (req, res, next) => {
     const userToken = req.header("Authorization").replace("Bearer ", "");
     // Verifying whether the token is valid
     const decodedToken = jwt.verify(userToken, "mealsSecret");
-    console.log(decodedToken);
 
     // Finding the user from database based on the valid token
     const user = await User.findOne({ _id: decodedToken._id });

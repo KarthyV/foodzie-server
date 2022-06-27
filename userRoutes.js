@@ -5,67 +5,38 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 router.post("/users", (req, res) => {
-  // Creating a new USer
-
   try {
-    // Encrypting the password using bcrypt
-    bcrypt.hash(req.body.password, 10, function (err, hash) {
-      // Storing the user data in variable
-      const userData = {
-        email: req.body.email,
-        password: hash,
-      };
-      const user = new User(userData); // Creating a user with the stored variable
-      // Creating a new token based on the user id
-      const token = jwt.sign({ _id: user._id }, "mealsSecret", {
-        expiresIn: "24h",
-      });
-      // Storing the token along with the user data
-      user.token = token;
-      // Saving it to the database
-      user.save();
-      // console.log(user);
-      // Sending the user data back to the client
-      res.send(user);
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send();
-  }
-});
+    // Storing the user data in variable
+    const userData = {
+      email: req.body.email,
+      username: req.body.name,
+    };
 
-// Logging In existing user
+    // Checking whether user is in database
 
-router.post("/login", (req, res) => {
-  try {
-    const { email, password } = req.body; // Getting the user data
-
-    // Finding the user based from database
-    User.findOne({ email: email }, (err, foundUser) => {
-      if (err) throw new Error("Invalid Credentials");
-      else {
-        if (!foundUser) res.json({ message: "User not valid" });
-        // If User found comparing the password using bcrypt
-        if (foundUser) {
-          bcrypt.compare(password, foundUser.password, (err, result) => {
-            if (result === true) {
-              // Once the user data matches database, creating a new token for the user
-              const token = jwt.sign({ _id: foundUser._id }, "mealsSecret", {
-                expiresIn: "10h",
-              });
-              // Saving the token to the database
-              delete foundUser.password;
-              foundUser.token = token;
-              // sending the user data to the client
-              res.send(foundUser);
-            }
-          });
-        }
+    User.findOne({ email: userData.email }, (err, foundUser) => {
+      // if found sending the details along with token
+      if (foundUser) {
+        const token = jwt.sign({ _id: foundUser._id }, "mealsSecret", {
+          expiresIn: "24h",
+        });
+        foundUser.token = token;
+        foundUser.save();
+        return res.send(foundUser);
+      } else {
+        // If not in database , Creating a new user
+        const user = new User(userData);
+        const token = jwt.sign({ _id: user._id }, "mealsSecret", {
+          expiresIn: "24h",
+        });
+        user.token = token;
+        user.save();
+        res.send(user);
       }
     });
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: "Invalid Credentials" });
+    res.status(500).send();
   }
 });
 
@@ -113,3 +84,70 @@ router.post("/delete-favorites", authUser, async (req, res) => {
 });
 
 module.exports = router;
+
+// Using bcrypt
+
+// router.post("/users", (req, res) => {
+//   // Creating a new USer
+
+//   try {
+//     // Encrypting the password using bcrypt
+//     bcrypt.hash(req.body.password, 10, function (err, hash) {
+//       // Storing the user data in variable
+//       const userData = {
+//         email: req.body.email,
+//         password: hash,
+//       };
+//       const user = new User(userData); // Creating a user with the stored variable
+//       // Creating a new token based on the user id
+//       const token = jwt.sign({ _id: user._id }, "mealsSecret", {
+//         expiresIn: "24h",
+//       });
+//       // Storing the token along with the user data
+//       user.token = token;
+//       // Saving it to the database
+//       user.save();
+//       // console.log(user);
+//       // Sending the user data back to the client
+//       res.send(user);
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send();
+//   }
+// });
+
+// Logging In existing user
+
+// router.post("/login", (req, res) => {
+//   try {
+//     const { email, password } = req.body; // Getting the user data
+
+//     // Finding the user based from database
+//     User.findOne({ email: email }, (err, foundUser) => {
+//       if (err) throw new Error("Invalid Credentials");
+//       else {
+//         if (!foundUser) res.json({ message: "User not valid" });
+//         // If User found comparing the password using bcrypt
+//         if (foundUser) {
+//           bcrypt.compare(password, foundUser.password, (err, result) => {
+//             if (result === true) {
+//               // Once the user data matches database, creating a new token for the user
+//               const token = jwt.sign({ _id: foundUser._id }, "mealsSecret", {
+//                 expiresIn: "10h",
+//               });
+//               // Saving the token to the database
+//               delete foundUser.password;
+//               foundUser.token = token;
+//               // sending the user data to the client
+//               res.send(foundUser);
+//             }
+//           });
+//         }
+//       }
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send({ message: "Invalid Credentials" });
+//   }
+// });
