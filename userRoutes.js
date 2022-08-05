@@ -4,6 +4,10 @@ const authUser = require("./authUser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+router.get("/", (req, res) => {
+  res.send(" Backend is running");
+});
+
 router.post("/users", (req, res) => {
   try {
     // Storing the user data in variable
