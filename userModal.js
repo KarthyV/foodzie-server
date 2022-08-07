@@ -12,14 +12,12 @@ const userSchema = new mongoose.Schema({
   token: {
     type: String,
   },
-  favorites: {
-    type: [
-      {
-        recipeId: { type: String, sparse: true },
-        recipeName: { type: String, sparse: true },
-      },
-    ],
-  },
+  favorites: [
+    {
+      recipeId: String,
+      recipeName: String,
+    },
+  ],
 });
 
 const User = mongoose.model("User", userSchema);

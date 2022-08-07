@@ -52,39 +52,52 @@ router.post("/auto-login", authUser, async (req, res) => {
 // Adding favorites
 
 router.post("/add-favorites", authUser, async (req, res) => {
-  // Getting the Recipe ID and Name from the frontend
-  const { recipeId, recipeName } = req.body;
+  try {
+    // Getting the Recipe ID and Name from the frontend
+    const { recipeId, recipeName } = req.body;
 
-  // Assigning the current user to user variable
-  const user = req.user;
+    // Assigning the current user to user variable
+    const user = req.user;
 
-  // If Favorites is empty adding the first recipe to list
-  if (!user.favorites.length) user.favorites.push({ recipeId, recipeName });
-
-  // If Favorites is not empty, adding favorites by checking if the recipe has already been added
-  const favCheck = user.favorites.some(
-    (recipe) => recipe.recipeId === recipeId
-  );
-  if (!favCheck) {
-    user.favorites.push({ recipeId, recipeName });
+    // If Favorites is empty adding the first recipe to list
+    if (!user.favorites || user.favorites.length < 1) {
+      user.favorites.push({ recipeId, recipeName });
+      await user.save();
+      return res.status(200).send(user);
+    } else {
+      // If Favorites is not empty, adding favorites by checking if the recipe has already been added
+      const favCheck = user.favorites.some(
+        (recipe) => recipe.recipeId === recipeId
+      );
+      if (!favCheck) {
+        user.favorites.push({ recipeId, recipeName });
+      }
+      // Saving the user again to the database along with favorites
+      await user.save();
+      res.status(200).send(user);
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
   }
-  // Saving the user again to the database along with favorites
-  await user.save();
-  res.status(200).send(user);
 });
 
 // Removing favorites from the database
 router.post("/delete-favorites", authUser, async (req, res) => {
-  // Getting the recipe ID for checking if it exists in favorites
-  const { recipeId } = req.body;
-  const user = req.user;
-  // console.log(recipeId);
-  user.favorites = user.favorites.filter(
-    (recipe) => recipe.recipeId !== recipeId
-  );
-  // After filtering saving again the user and sending back the updated user to client
-  await user.save();
-  res.status(200).send(user);
+  try {
+    // Getting the recipe ID for checking if it exists in favorites
+    const { recipeId } = req.body;
+    const user = req.user;
+    // console.log(recipeId);
+    user.favorites = user.favorites.filter(
+      (recipe) => recipe.recipeId !== recipeId
+    );
+    // After filtering saving again the user and sending back the updated user to client
+    await user.save();
+    res.status(200).send(user);
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 module.exports = router;
